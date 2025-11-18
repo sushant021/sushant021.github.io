@@ -72,5 +72,11 @@ header{
 
 .post-title{
     text-decoration:none;
+    font-family: 'Roboto', Arial, sans-serif; 
 }
 
+.post-content {
+    font-family: 'Roboto', Arial, sans-serif; 
+    font-size: 18px; 
+    line-height: 1.5; 
+}
