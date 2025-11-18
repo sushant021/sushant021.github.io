@@ -4,21 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ page.title }} | {{ site.title }}</title>
-  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/syntax.css">
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 </head>
 <body>
+
   <header>
-        <nav>
-            <a class="logo" href="index.html">Sushant Nepal :/</a>
-            <ul class="nav-links">
-                <li><a href="posts.html">Blog</a></li>
-                <li><a href="bio.html">Bio</a></li>
-                
-            </ul>
-        </nav>
-    </header>
+    <nav>
+      <a class="logo" href="{{ '/' | relative_url }}">Sushant Nepal :/</a>
+      <ul class="nav-links">
+        <li><a href="{{ '/' | relative_url }}">Blog</a></li>
+        <li><a href="{{ '/bio/' | relative_url }}">Bio</a></li>
+      </ul>
+    </nav>
+  </header>
 
 
   <main class="container mt-5">

@@ -13,11 +13,11 @@ body {
 }
 
 nav{
-    padding: 2rem;
+    padding-top: 2rem;
 }
 
 header{
-    padding: 2rem;
+    
     display: block;
     text-align: center;
     
@@ -69,3 +69,8 @@ header{
 .nav-links a:hover::after {
     transform: scaleX(1);
 }
+
+.post-title{
+    text-decoration:none;
+}
+

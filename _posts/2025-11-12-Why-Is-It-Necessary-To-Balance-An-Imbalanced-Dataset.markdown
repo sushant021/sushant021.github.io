@@ -1,14 +1,14 @@
 ---
 layout: post
-title:  "Why is It Necessary To Balance an Imbalanced Dataset"
-date:   2025-11-17 14:14:11 -0700
+title:  "Why Is It Necessary To Balance An Imbalanced Dataset"
+date:   2025-11-12 14:14:11 -0700
 tags: [data-science, python] 
 ---
 
 An imbalanced dataset is kind of a dataset that is skewed towards one class. For example in a credit card transaction data, you may see 1 or 2 fraud transactions out of 1000s of transactions. So that dataset is highly skewed towards "legit" class. 
 
 
-{% highlight ruby %}
+{% highlight python %}
 
 import numpy as np 
 import pandas as pd 
