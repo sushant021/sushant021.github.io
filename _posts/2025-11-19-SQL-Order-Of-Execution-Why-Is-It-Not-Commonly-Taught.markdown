@@ -6,7 +6,6 @@ tags: [sql, data-analysis]
 ---
 
 
-
 Through my entire Bachelor's degree and throughout my other training
 programs, nobody ever taught the SQL Order of Execution. Everybody kept
 focusing on clauses, joins and just the basic process of writing a
@@ -79,24 +78,52 @@ FROM sales
 WHERE price * quantity > 1000;
 ```
 
+<h5 class="mb-4 fw-bold"> Example: GROUP BY Happens Before SELECT </h5>
+Let's take a look at this another classic beginner confusion. 
 
-<h5 class="fw-bold mt-5">
-Example: GROUP BY Comes Before SELECT
-</h5>
+``` sql
+SELECT customer_id, SUM(amount) AS total_spent
+FROM transactions
+WHERE total_spent > 500;   
+GROUP BY customer_id;
+```
+Again, SQL evaluates in this order:
+
+FROM >
+WHERE >
+GROUP BY >
+SELECT
+
+So `total_spent` doesn’t exist when WHERE runs.
+
+The Correct Way — Use HAVING
+
 ``` sql
 SELECT customer_id, SUM(amount) AS total_spent
 FROM transactions
 GROUP BY customer_id
 HAVING SUM(amount) > 500;
 ```
-
-The HAVING clause works because SQL processes GROUP BY before HAVING but
-after WHERE.
+This is a perfect example of why order of execution matters—many SQL learners simply memorize “HAVING is for aggregates,”. Now you know why and knowing why helps you understand and write better queries with it. 
 
 
-<h5 class="fw-bold mt-5">
-Example: Window Functions Come Late
-</h5>
+<h5 class="mb-4 fw-bold"> Example: Window Functions Come Late </h5>
+
+Window functions are powerful, but they obey strict rules because they happen near the end of execution.
+
+Take the following example.
+``` sql
+SELECT
+    customer_id,
+    amount,
+    ROW_NUMBER() OVER (ORDER BY amount DESC) AS rank
+FROM transactions
+WHERE rank = 1;  
+```
+This will not work. Why? Because `rank` is created late, after WHERE, so the WHERE clause has no idea it exists.
+
+The Correct Way - Use Subquery or Common Table Expression (CTE)
+
 ``` sql
 WITH ranked AS (
     SELECT 
@@ -109,21 +136,68 @@ SELECT *
 FROM ranked
 WHERE rank = 1;
 ```
+Window functions are evaluated *after* SELECT but *before* ORDER BY, so they need their own step if you want to filter on them.
 
-Window functions run after SELECT but before ORDER BY, so filtering on
-them requires a subquery or CTE.
+<h5 class="mb-4 fw-bold"> A More Realistic Example</h5>
+
+Here’s a more realistic example that we may encounter in actual work. 
+
+Question:
+
+*Find each customer’s largest purchase, then return only the top 5 customers by purchase size.*
+
+``` sql
+WITH ranked_purchases AS (
+    SELECT 
+        customer_id,
+        amount,
+        ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY amount DESC) AS purchase_rank
+    FROM transactions
+)
+SELECT customer_id, amount
+FROM ranked_purchases
+WHERE purchase_rank = 1
+ORDER BY amount DESC
+LIMIT 5;
+```
+Let's break this down step by step. 
+
+1. Start with outer query - FROM
+
+    FROM `ranked_purchases` executes first. Upon seeing `ranked_purchases`, it then executes the CTE:
+        
+    ``` sql
+    SELECT 
+        customer_id,
+        amount,
+        ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY amount DESC) AS purchase_rank
+    FROM transactions
+    ```
+    This CTE has its own internal execution order :
+    1. FROM Transactions
+    2. Window Function ROW_NUMBER() - SQL partitions rows by customer_id, orders the rows by amount DESC, and assigns row numbers to them, now named "purchase_rank".  
+    3. SELECT the columns customer_id, amount, purchase_rank                
+<br>
 
 
-<h5 class="fw-bold mt-5">
-Final Thoughts
-</h5>
-Understanding SQL's true order of execution turns SQL from a
-memorization exercise into a logical workflow. It helps you debug
-faster, write cleaner queries, and fully leverage SQL's
-power---especially as you move into analytics, engineering, or data
-science.
+2. Back to outer query - WHERE
+
+    Now SQL treats the CTE result as a table `ranked_purchases` that has columns: customer_id, amount, purchase_rank. 
+    Filtering by `purchase_rank = 1` gives the top row for each customer, i.e. each customer's highest purchase. 
+
+3. SELECT customer_id, amount - select the required columns
+
+4. ORDER BY - order by DESC
+
+5. LIMIT - limit only top 5 rows
 
 
+Once you understand the order of execution, queries like this become intuitive instead of trial-and-error.
 
+<h5 class="mb-4 fw-bold">Conclusion</h5>
 
+If you're new to SQL, learning the order of execution will save you hours of senseless debugging, make JOINs, GROUP BYs and HAVINGs more logical and meaningful, clarify when and why CTEs or subqueries are required. Overall it just helps you write cleaner queries and understand complex queries better. 
 
+It’s one of those topics that nobody teaches you early, yet it unlocks a massive shift in how you think about SQL. If you’re just starting out, don’t feel bad—every seasoned data person has had that moment of realizing “SQL doesn’t run top to bottom.”
+
+Now you’re ahead of the curve.
